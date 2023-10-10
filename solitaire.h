@@ -9,6 +9,8 @@ class Solitaire {
     static const int EARNING_SCORE = 5;
     static const char* SYMBOL_STR[];
 
+    int solve_count = 0;
+
     CardPile playing_piles[PLAYING_LINES];
     CardPile waste_pile;
     CardPile stock;
@@ -25,10 +27,10 @@ class Solitaire {
 
     bool is_sussesive(const Card& top, const Card& bottom) const;
     
-    void print_each(const int count,
-                    const Card& moved_card,
+    void print_each(const Card& moved_card,
                     const std::string from_position,
-                    const std::string to_position) const;
+                    const std::string to_position,
+                    const bool count_increment = true);
 
     bool equal_to_the_last_move(const CardPile& cards, int from, int to) const;
     bool equal_to_the_last_move(const Card& card, int from, int to) const;

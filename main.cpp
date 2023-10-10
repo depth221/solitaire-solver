@@ -10,7 +10,6 @@ int main(int argc, char* argv[]) {
 
     Solitaire solitaire(seed);
     solitaire.solve();
-    
 
     return 0;
 }
