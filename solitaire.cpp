@@ -1,6 +1,8 @@
 #include <iostream>
 #include <random>
 #include <string>
+#include <fstream>
+#include <ostream>
 
 #include "solitaire.h"
 
@@ -12,13 +14,14 @@ bool Solitaire::is_sussesive(const Card& top, const Card& bottom) const {
 }
 
 void Solitaire::print_each(const Card& moved_card,
-                const std::string from_position,
-                const std::string to_position,
-                const bool count_increment) {
+                           const std::string from_position,
+                           const std::string to_position,
+                           const bool count_increment) {
     if (count_increment) {
         solve_count++;
     }
 
+    // terminal
     std::cout << solve_count
               << ": ";
     if (moved_card.symbol % 2 == 1) {
@@ -34,6 +37,22 @@ void Solitaire::print_each(const Card& moved_card,
         std::cout << "(score: " << score << " →  " << score + EARNING_SCORE << ")";
     }
     std::cout << "\n";
+
+    // file
+    if (output_file.is_open()) {
+        output_file << solve_count
+                    << ": "
+                    << SYMBOL_STR[moved_card.symbol] <<NUMBER[moved_card.number]
+                    << " ["
+                    << from_position
+                    << " →  "
+                    << to_position
+                    << "] ";
+        if (to_position == "output") {
+            output_file << "(score: " << score << " →  " << score + EARNING_SCORE << ")";
+        }
+        output_file << "\n";
+    }
 }
 
 bool Solitaire::equal_to_the_last_move(const CardPile& cards, int from, int to) const {
@@ -56,6 +75,10 @@ void Solitaire::update_last_moving(const Card& card, int from, int to) {
     CardPile tmp_cardpile = CardPile();
     tmp_cardpile.push(card);
     update_last_moving(tmp_cardpile, from, to);
+}
+
+Solitaire::Solitaire(int seed, std::string path): Solitaire::Solitaire(seed) {
+    output_file.open(path);
 }
 
 Solitaire::Solitaire(int seed) {
@@ -105,6 +128,10 @@ Solitaire::Solitaire(int seed) {
     stock.set_closed_pos(24 - 1);
 }
 
+Solitaire::~Solitaire() {
+    output_file.close();
+}
+
 bool Solitaire::solve() {
     bool is_moved = false;
     bool game_over = false;
@@ -134,8 +161,10 @@ bool Solitaire::solve() {
                     // print the description for the moving
                     update_last_moving(top_card, i + 1, last_moving.Output);
                     std::cout << "-------------------------------------------------\n";
+                    if (output_file.is_open()) output_file << "-------------------------------------------------\n";
                     print_each(top_card, "playing #" + std::to_string(i + 1), "output");
                     std::cout << "\n";
+                    if (output_file.is_open()) output_file << "\n";
                     is_moved = true;
                     score += EARNING_SCORE;
                     break;
@@ -163,8 +192,10 @@ bool Solitaire::solve() {
                 // print the description for the moving
                 update_last_moving(top_card, last_moving.Waste, last_moving.Output);
                 std::cout << "-------------------------------------------------\n";
+                if (output_file.is_open()) output_file << "-------------------------------------------------\n";
                 print_each(top_card, "waste", "output");
                 std::cout << "\n";
+                if (output_file.is_open()) output_file << "\n";
                 is_moved = true;
                 score += EARNING_SCORE;
             }
@@ -182,8 +213,10 @@ bool Solitaire::solve() {
 
                 update_last_moving(stock.top(), last_moving.Stock, last_moving.Waste);
                 std::cout << "-------------------------------------------------\n";
+                if (output_file.is_open()) output_file << "-------------------------------------------------\n";
                 print_each(stock.top(), "stock", "waste");
                 std::cout << "\n";
+                if (output_file.is_open()) output_file << "\n";
                 stock.pop();
                 stock.set_closed_pos(stock.size() - 1);
                 is_moved = true;
@@ -208,8 +241,10 @@ bool Solitaire::solve() {
 
                         update_last_moving(waste_card, last_moving.Waste, i + 1);
                         std::cout << "-------------------------------------------------\n";
+                        if (output_file.is_open()) output_file << "-------------------------------------------------\n";
                         print_each(waste_card, "waste", "playing #" + std::to_string(i + 1));
                         std::cout << "\n";
+                        if (output_file.is_open()) output_file << "\n";
                         is_moved = true;
                         break;
                     }
@@ -225,8 +260,10 @@ bool Solitaire::solve() {
 
                         update_last_moving(waste_card, last_moving.Waste, i + 1);
                         std::cout << "-------------------------------------------------\n";
+                        if (output_file.is_open()) output_file << "-------------------------------------------------\n";
                         print_each(waste_card, "waste", "playing #" + std::to_string(i + 1));
                         std::cout << "\n";
+                        if (output_file.is_open()) output_file << "\n";
                         is_moved = true;
                         break;
                     }
@@ -239,8 +276,10 @@ bool Solitaire::solve() {
 
                     update_last_moving(waste_card, last_moving.Waste, i + 1);
                     std::cout << "-------------------------------------------------\n";
+                    if (output_file.is_open()) output_file << "-------------------------------------------------\n";
                     print_each(waste_card, "waste", "playing #" + std::to_string(i + 1));
                     std::cout << "\n";
+                    if (output_file.is_open()) output_file << "\n";
                     is_moved = true;
                     break;
                 }
@@ -326,6 +365,7 @@ bool Solitaire::solve() {
 
             // paste to the dest playing piles
             std::cout << "-------------------------------------------------\n";
+            if (output_file.is_open()) output_file << "-------------------------------------------------\n";
             solve_count++;
             while (!tmp_stack.is_empty()) {
                 playing_piles[suitable_pile].push(tmp_stack.top());
@@ -337,6 +377,7 @@ bool Solitaire::solve() {
                 tmp_stack.pop();
             }
             std::cout << "\n";
+            if (output_file.is_open()) output_file << "\n";
 
             is_moved = true;
             break;
@@ -352,8 +393,10 @@ bool Solitaire::solve() {
 
             update_last_moving(stock.top(), last_moving.Stock, last_moving.Waste);
             std::cout << "-------------------------------------------------\n";
+            if (output_file.is_open()) output_file << "-------------------------------------------------\n";
             print_each(stock.top(), "stock", "waste");
             std::cout << "\n";
+            if (output_file.is_open()) output_file << "\n";
 
             stock.pop();
             stock.set_closed_pos(stock.size() - 1);
@@ -372,8 +415,15 @@ bool Solitaire::solve() {
     if (game_over) {
         std::cout << "game over!\n"
                     << "score: " << score << "\n";
+        if (output_file.is_open()) output_file << "game over!\n"
+                    << "score: " << score << "\n";
+        if (score > 150) {
+            std::cout <<"???";
+        }
     } else {
         std::cout << "game clear!\n"
+                    << "score: " << score << "\n";
+        if (output_file.is_open()) output_file << "game clear!\n"
                     << "score: " << score << "\n";
     }
 
@@ -439,6 +489,7 @@ void Solitaire::print_board() {
         for (int j = 0; j < (PLAYING_LINES > 7 ? PLAYING_LINES : 7); j++) {
             if (board[i][j].number == -1) {
                 std::cout << "     ";
+                if (output_file.is_open()) output_file << "     ";
                 continue;
             }
 
@@ -449,13 +500,17 @@ void Solitaire::print_board() {
             }
 
             std::cout << SYMBOL_STR[board[i][j].symbol] << NUMBER[board[i][j].number] << " ";
+            if (output_file.is_open()) output_file << SYMBOL_STR[board[i][j].symbol] << NUMBER[board[i][j].number] << " ";
 
             std::cout << "\033[0m";
         }
         std::cout << "\n";
+        if (output_file.is_open()) output_file << "\n";
+
     }
 
     std::cout << "\n";
+    if (output_file.is_open()) output_file << "\n";
 
     for (int i = 0; i < max_length + 2; i++) {
         delete board[i];

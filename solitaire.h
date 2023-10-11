@@ -1,6 +1,10 @@
 #ifndef SOLITAIRE_H
 #define SOLITAIRE_H
 
+#include <string>
+#include <fstream>
+#include <ostream>
+
 #include "cardpile.h"
 
 class Solitaire {
@@ -10,6 +14,8 @@ class Solitaire {
     static const char* SYMBOL_STR[];
 
     int solve_count = 0;
+
+    std::ofstream output_file;
 
     CardPile playing_piles[PLAYING_LINES];
     CardPile waste_pile;
@@ -28,8 +34,7 @@ class Solitaire {
     bool is_sussesive(const Card& top, const Card& bottom) const;
     
     void print_each(const Card& moved_card,
-                    const std::string from_position,
-                    const std::string to_position,
+                    const std::string from_position, const std::string to_position,
                     const bool count_increment = true);
 
     bool equal_to_the_last_move(const CardPile& cards, int from, int to) const;
@@ -40,8 +45,10 @@ class Solitaire {
 
     public:
     Solitaire(): Solitaire::Solitaire(1) {}
-
     Solitaire(int seed);
+    Solitaire(std::string path): Solitaire::Solitaire(1, path) {}
+    Solitaire(int seed, std::string path);
+    ~Solitaire();
 
     bool solve();
 
